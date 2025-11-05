@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Lift Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #1a1a2e;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #e0e0e0;
+        }
+
+        .building {
+            display: flex;
+            position: relative;
+            width: 300px;
+            height: 500px;
+            border: 8px solid #00568c;
+            background: linear-gradient(to right, #001f3f, #003366);
+        }
+
+        .lift-shaft {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .lift {
+            width: 60px;
+            height: 143px;
+            background: rgba(0, 180, 255, 0.2);
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            border: 4px solid #00b4ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+            transition: bottom 2.5s ease-in-out;
+            border-radius: 5px;
+        }
+
+        .doors {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .door {
+            flex: 1;
+            background: #004488;
+            transition: transform 1s ease-in-out;
+            border-right: 2px solid #002244;
+            border-left: 2px solid #002244;
+        }
+
+        .door.left {
+            transform-origin: left;
+            border-left: none;
+        }
+
+        .door.right {
+            transform-origin: right;
+            border-right: none;
+        }
+
+        .floor-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            left: 0;
+        }
+
+        .floor-line-g {
+            bottom: 150px;
+        }
+
+        .floor-line-1 {
+            bottom: 300px;
+        }
+
+        .floor-line-2 {
+            bottom: 450px;
+        }
+
+        .floor-control-panel {
+            position: absolute;
+            right: 20px;
+            width: 100px;
+            height: 90px;
+            background: #0d0d21;
+            border: px solid #00b4ff;
+            box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        /* New positions to match the image */
+        .panel-g {
+            bottom: 15px;
+        }
+
+        .panel-1 {
+            bottom: 165px;
+        }
+
+        .panel-2 {
+            bottom: 315px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .floor-control-panel button {
+            width: 30px;
+            height: 20px;
+            font-size: 10px;
+            border: none;
+            background: #0077b6;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .floor-control-panel button:hover {
+            background: #00568c;
+        }
+
+        .floor-control-panel button:active {
+            transform: scale(0.95);
+            background: #00b4ff;
+            box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+        }
+
+        .display {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            background: #0d0d21;
+            color: #ff0000;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .led-display {
+            font-family: 'monospace', sans-serif;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+        }
+
+        .direction {
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+        .people-container {
+            position: absolute;
+            bottom: 0px;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            transition: background-image 0.5s;
+        }
+
+        .stick-figure {
+            width: 20px;
+            height: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            margin: 0 5px;
+            display: block;
+        }
+
+        .overload {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><g transform="scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g><g transform="translate(40,0) scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g><g transform="translate(80,0) scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g><g transform="translate(120,0) scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g></svg>');
+            background-size: 100% auto;
+            background-repeat: no-repeat;
+        }
+
+        .overload .stick-figure {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="building">
+        <div class="lift-shaft">
+            <div class="display">
+                <span id="floorDisplay" class="led-display">G</span>
+                <span id="direction" class="direction">–</span>
+            </div>
+            <div class="lift" id="lift">
+                <div class="doors">
+                    <div class="door left" id="leftDoor"></div>
+                    <div class="door right" id="rightDoor"></div>
+                </div>
+                <div id="peopleContainer" class="people-container">
+                    <div class="stick-figure"></div>
+                </div>
+            </div>
+
+            <div class="floor-control-panel panel-g">
+                <div class="button-grid">
+                    <button onclick="addToQueue(0)">G</button>
+                    <button onclick="addToQueue(1)">1</button>
+                    <button onclick="addToQueue(2)">2</button>
+                    <button onclick="openDoor()">▶◀</button>
+                    <button onclick="closeDoor()">◀▶</button>
+                    <button onclick="toggleLight()">💡</button>
+                    <button onclick="toggleFan()">🌀</button>
+                    <button onclick="triggerAlarm()">🚨</button>
+                    <button onclick="triggerFire()">🔥</button>
+                </div>
+            </div>
+            <div class="floor-control-panel panel-1">
+                <div class="button-grid">
+                    <button onclick="addToQueue(0)">G</button>
+                    <button onclick="addToQueue(1)">1</button>
+                    <button onclick="addToQueue(2)">2</button>
+                    <button onclick="openDoor()">▶◀</button>
+                   <button onclick="closeDoor()">◀▶</button>
+                    <button onclick="toggleLight()">💡</button>
+                    <button onclick="toggleFan()">🌀</button>
+                    <button onclick="triggerAlarm()">🚨</button>
+                    <button onclick="triggerFire()">🔥</button>
+                </div>
+            </div>
+            <div class="floor-control-panel panel-2">
+                <div class="button-grid">
+                    <button onclick="addToQueue(0)">G</button>
+                    <button onclick="addToQueue(1)">1</button>
+                    <button onclick="addToQueue(2)">2</button>
+                    <button onclick="openDoor()">▶◀</button>
+                    <button onclick="closeDoor()">◀▶</button>
+                    <button onclick="toggleLight()">💡</button>
+                    <button onclick="toggleFan()">🌀</button>
+                    <button onclick="triggerAlarm()">🚨</button>
+                    <button onclick="triggerFire()">🔥</button>
+                </div>
+            </div>
+
+            <div class="floor-line floor-line-g"></div>
+            <div class="floor-line floor-line-1"></div>
+            <div class="floor-line floor-line-2"></div>
+        </div>
+    </div>
+
+    <audio id="beepSound">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const lift = document.getElementById('lift');
+        const leftDoor = document.getElementById('leftDoor');
+        const rightDoor = document.getElementById('rightDoor');
+        const floorDisplay = document.getElementById('floorDisplay');
+        const direction = document.getElementById('direction');
+        const beepSound = document.getElementById('beepSound');
+        const peopleContainer = document.getElementById('peopleContainer');
+        const stickFigure = document.querySelector('.stick-figure');
+
+        const floors = [0, 150, 300];
+        let currentFloor = 0;
+        let isMoving = false;
+        let lightOn = false;
+        let fanOn = false;
+        let isOverloaded = false;
+        let isStuck = false;
+        const floorQueue = [];
+
+        function updateDisplay(message) {
+            floorDisplay.textContent = message;
+            if (message !== 'ALARM' && message !== 'FIRE' && message !== 'OVERLOAD' && message !== 'STUCK' && message !== 'DOORS OPEN' && message !== 'DOORS CLOSE' && message !== 'MOVING') {
+                floorDisplay.style.color = '#ff0000';
+            } else {
+                floorDisplay.style.color = 'red';
+            }
+        }
+
+        function addToQueue(floor) {
+            if (isOverloaded || isStuck) {
+                updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
+                beepSound.play();
+                setTimeout(() => {
+                    updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+                }, 2000);
+                return;
+            }
+            if (!floorQueue.includes(floor)) {
+                floorQueue.push(floor);
+                floorQueue.sort((a, b) => a - b);
+            }
+            processQueue();
+        }
+
+        function processQueue() {
+            if (isMoving || floorQueue.length === 0 || isOverloaded || isStuck) {
+                return;
+            }
+
+            isMoving = true;
+            const nextFloor = floorQueue.shift();
+
+            const goingUp = nextFloor > currentFloor;
+            direction.textContent = goingUp ? '▲' : '▼';
+            updateDisplay('MOVING');
+
+            closeDoor();
+            setTimeout(() => {
+                lift.style.bottom = floors[nextFloor] + 'px';
+                setTimeout(() => {
+                    currentFloor = nextFloor;
+                    direction.textContent = '–';
+                    isMoving = false;
+                    updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+                    openDoor(); // Automatically opens the doors when the lift arrives
+                    setTimeout(processQueue, 2000);
+                }, 2500);
+            }, 1000);
+        }
+
+        function openDoor() {
+            if (isMoving) {
+                return;
+            }
+            leftDoor.style.transform = 'translateX(-100%)';
+            rightDoor.style.transform = 'translateX(100%)';
+            updateDisplay('DOORS OPEN');
+            stickFigure.style.opacity = '1'; 
+            setTimeout(() => {
+                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+            }, 1000);
+        }
+
+        function closeDoor() {
+            if (isOverloaded || isStuck) {
+                updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
+                beepSound.play();
+                return;
+            }
+            leftDoor.style.transform = 'translateX(0)';
+            rightDoor.style.transform = 'translateX(0)';
+            updateDisplay('DOORS CLOSE');
+            stickFigure.style.opacity = '0';
+            setTimeout(() => {
+                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+            }, 1000);
+        }
+
+        function toggleLight() {
+            lightOn = !lightOn;
+            lift.style.background = lightOn ? '#f1c40f' : 'rgba(0, 180, 255, 0.2)';
+        }
+        
+        function toggleFan() {
+            fanOn = !fanOn;
+            lift.style.borderStyle = fanOn ? 'dashed' : 'solid';
+        }
+
+        function triggerAlarm() {
+            if (isStuck) {
+                isStuck = false;
+                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+                processQueue();
+                return;
+            }
+
+            if (isMoving) {
+                isStuck = true;
+                updateDisplay('STUCK');
+                beepSound.play();
+                return;
+            }
+
+            // Default behavior if not stuck and not moving
+            isOverloaded = !isOverloaded;
+            if (isOverloaded) {
+                peopleContainer.classList.add('overload');
+                updateDisplay('OVERLOAD');
+                beepSound.play();
+            } else {
+                peopleContainer.classList.remove('overload');
+                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+            }
+        }
+
+        function triggerFire() {
+            if (isMoving) return;
+            updateDisplay('FIRE');
+
+            let nearestFloor = 0;
+            let minDiff = Infinity;
+            floors.forEach((pos, idx) => {
+                const diff = Math.abs(pos - parseInt(lift.style.bottom || 0));
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    nearestFloor = idx;
+                }
+            });
+
+            addToQueue(nearestFloor);
+        }
+    </script>
+</body>
+</html>
