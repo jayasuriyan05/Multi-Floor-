@@ -210,9 +210,6 @@
         }
 
     </style>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
-
 </head>
 <body>
     <div class="building">
@@ -281,29 +278,6 @@
         <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
         <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
     </audio>
-    <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAcoUfLPHVbLPd3VsHO1KD76QNh19T26as",
-    authDomain: "lift-system-ecd94.firebaseapp.com",
-    databaseURL: "https://lift-system-ecd94-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "lift-system-ecd94",
-    storageBucket: "lift-system-ecd94.firebasestorage.app",
-    messagingSenderId: "254665144703",
-    appId: "1:254665144703:web:dc97957dd1a542285fc24a",
-    measurementId: "G-DZLRX1E6VG"
-  };
-
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  function updateLiftStatus(floor, door) {
-    db.ref("lift/status").set({
-      floor: floor,
-      door: door,
-      time: new Date().toLocaleTimeString()
-    });
-  }
-</script>
 
     <script>
         const lift = document.getElementById('lift');
@@ -366,7 +340,6 @@
                 lift.style.bottom = floors[nextFloor] + 'px';
                 setTimeout(() => {
                     currentFloor = nextFloor;
-                    updateLiftStatus(currentFloor, "arrived");
                     direction.textContent = '–';
                     isMoving = false;
                     updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
@@ -377,37 +350,32 @@
         }
 
         function openDoor() {
-          if (isMoving) return;
-          leftDoor.style.transform = 'translateX(-100%)';
-          rightDoor.style.transform = 'translateX(100%)';
-          updateDisplay('DOORS OPEN');
-          stickFigure.style.opacity = '1';
-            
-          updateLiftStatus(currentFloor, "open");
-          setTimeout(() => {
-         updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-  }, 1000);
-}
-
+            if (isMoving) {
+                return;
+            }
+            leftDoor.style.transform = 'translateX(-100%)';
+            rightDoor.style.transform = 'translateX(100%)';
+            updateDisplay('DOORS OPEN');
+            stickFigure.style.opacity = '1'; 
+            setTimeout(() => {
+                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+            }, 1000);
+        }
 
         function closeDoor() {
-  if (isOverloaded || isStuck) {
-    updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
-    beepSound.play();
-    return;
-  }
-  leftDoor.style.transform = 'translateX(0)';
-  rightDoor.style.transform = 'translateX(0)';
-  updateDisplay('DOORS CLOSE');
-  stickFigure.style.opacity = '0';
-
-  // 🔹 send data to Firebase
-  updateLiftStatus(currentFloor, "closed");
-
-  setTimeout(() => {
-    updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-  }, 1000);
-}
+            if (isOverloaded || isStuck) {
+                updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
+                beepSound.play();
+                return;
+            }
+            leftDoor.style.transform = 'translateX(0)';
+            rightDoor.style.transform = 'translateX(0)';
+            updateDisplay('DOORS CLOSE');
+            stickFigure.style.opacity = '0';
+            setTimeout(() => {
+                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+            }, 1000);
+        }
 
         function toggleLight() {
             lightOn = !lightOn;
