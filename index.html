@@ -334,7 +334,7 @@
             const goingUp = nextFloor > currentFloor;
             direction.textContent = goingUp ? '▲' : '▼';
             updateDisplay('MOVING');
-
+            logLiftAction("MOVING", nextFloor);
             closeDoor();
             setTimeout(() => {
                 lift.style.bottom = floors[nextFloor] + 'px';
@@ -343,6 +343,7 @@
                     direction.textContent = '–';
                     isMoving = false;
                     updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+                    logLiftAction("ARRIVED", currentFloor);
                     openDoor(); // Automatically opens the doors when the lift arrives
                     setTimeout(processQueue, 2000);
                 }, 2500);
@@ -356,6 +357,7 @@
             leftDoor.style.transform = 'translateX(-100%)';
             rightDoor.style.transform = 'translateX(100%)';
             updateDisplay('DOORS OPEN');
+            logLiftAction("DOORS OPEN", currentFloor);
             stickFigure.style.opacity = '1'; 
             setTimeout(() => {
                 updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
@@ -371,6 +373,7 @@
             leftDoor.style.transform = 'translateX(0)';
             rightDoor.style.transform = 'translateX(0)';
             updateDisplay('DOORS CLOSE');
+            logLiftAction("DOORS CLOSE", currentFloor);
             stickFigure.style.opacity = '0';
             setTimeout(() => {
                 updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
@@ -407,16 +410,20 @@
             if (isOverloaded) {
                 peopleContainer.classList.add('overload');
                 updateDisplay('OVERLOAD');
+                logLiftAction("OVERLOAD", currentFloor);
                 beepSound.play();
             } else {
                 peopleContainer.classList.remove('overload');
                 updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
+                logLiftAction("OVERLOAD CLEARED", currentFloor);
             }
         }
 
        function triggerFire() {
     if (displayTimeout) clearTimeout(displayTimeout); // Clear previous timeout
-                updateDisplay('FIRE'); // Show FIRE message
+                updateDisplay('FIRE');
+           logLiftAction("FIRE ALERT", currentFloor);
+// Show FIRE message
     displayTimeout = setTimeout(() => {
         updateDisplay(currentFloor===0?'G':currentFloor); // Return to current floor after 3s
     }, 3000);
