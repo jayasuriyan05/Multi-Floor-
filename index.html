@@ -423,5 +423,46 @@
 }
 
     </script>
+    <!-- ✅ Firebase Setup and Logging (Paste before </body>) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+
+  // Your Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtPWVd5UWL6WBsq0dnrhnzpvsFNlyfbds",
+    authDomain: "multifloorlift.firebaseapp.com",
+    databaseURL: "https://multifloorlift-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "multifloorlift",
+    storageBucket: "multifloorlift.appspot.com",
+    messagingSenderId: "538583269113",
+    appId: "1:538583269113:web:ba3fe48b17a6e4b7b12c28",
+    measurementId: "G-V9R64VQ63C"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(app);
+
+  // ✅ Function to log lift actions to Firebase
+  function logLiftAction(action, floor) {
+    const actionsRef = ref(db, "liftActions/");
+    const newActionRef = push(actionsRef);
+    set(newActionRef, {
+      action: action,
+      floor: floor,
+      timestamp: new Date().toISOString()
+    });
+    console.log(`✅ Logged to Firebase: ${action} at floor ${floor}`);
+  }
+
+  // ✅ Example: Log when user clicks anywhere (for testing)
+  document.addEventListener("click", () => {
+    logLiftAction("Lift moved up", 2);
+  });
+</script>
+
 </body>
 </html>
