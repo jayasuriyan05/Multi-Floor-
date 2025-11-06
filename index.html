@@ -1,482 +1,474 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Lift Simulation</title>
-    <style>
-        body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #1a1a2e;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: #e0e0e0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lift Simulation</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #1a1a2e;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #e0e0e0;
+    }
 
-        .building {
-            display: flex;
-            position: relative;
-            width: 300px;
-            height: 500px;
-            border: 8px solid #00568c;
-            background: linear-gradient(to right, #001f3f, #003366);
-        }
+    .building {
+      display: flex;
+      position: relative;
+      width: 300px;
+      height: 500px;
+      border: 8px solid #00568c;
+      background: linear-gradient(to right, #001f3f, #003366);
+    }
 
-        .lift-shaft {
-            flex-grow: 1;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            position: relative;
-            background: rgba(0, 0, 0, 0.4);
-        }
+    .lift-shaft {
+      flex-grow: 1;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      position: relative;
+      background: rgba(0, 0, 0, 0.4);
+    }
 
-        .lift {
-            width: 60px;
-            height: 143px;
-            background: rgba(0, 180, 255, 0.2);
-            position: absolute;
-            bottom: 0;
-            left: 50px;
-            border: 4px solid #00b4ff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            overflow: hidden;
-            transition: bottom 2.5s ease-in-out;
-            border-radius: 5px;
-        }
+    .lift {
+      width: 60px;
+      height: 143px;
+      background: rgba(0, 180, 255, 0.12);
+      position: absolute;
+      bottom: 0;
+      left: 50px;
+      border: 4px solid #00b4ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: hidden;
+      transition: bottom 2.5s ease-in-out;
+      border-radius: 5px;
+    }
 
-        .doors {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
+    .doors {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
 
-        .door {
-            flex: 1;
-            background: #004488;
-            transition: transform 1s ease-in-out;
-            border-right: 2px solid #002244;
-            border-left: 2px solid #002244;
-        }
+    .door {
+      flex: 1;
+      background: #004488;
+      transition: transform 1s ease-in-out;
+      border-right: 2px solid #002244;
+      border-left: 2px solid #002244;
+    }
 
-        .door.left {
-            transform-origin: left;
-            border-left: none;
-        }
+    .door.left { transform-origin: left; border-left: none; }
+    .door.right { transform-origin: right; border-right: none; }
 
-        .door.right {
-            transform-origin: right;
-            border-right: none;
-        }
+    .floor-line { position: absolute; width: 100%; height: 4px; background: #e0e0e0; left: 0; }
+    .floor-line-g { bottom: 150px; }
+    .floor-line-1 { bottom: 300px; }
+    .floor-line-2 { bottom: 450px; }
 
-        .floor-line {
-            position: absolute;
-            width: 100%;
-            height: 4px;
-            background: #e0e0e0;
-            left: 0;
-        }
+    .floor-control-panel {
+      position: absolute;
+      right: 20px;
+      width: 100px;
+      height: 90px;
+      background: #0d0d21;
+      box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
 
-        .floor-line-g {
-            bottom: 150px;
-        }
+    .panel-g { bottom: 15px; }
+    .panel-1 { bottom: 165px; }
+    .panel-2 { bottom: 315px; }
 
-        .floor-line-1 {
-            bottom: 300px;
-        }
+    .button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
-        .floor-line-2 {
-            bottom: 450px;
-        }
+    .floor-control-panel button {
+      width: 30px; height: 20px; font-size: 10px; border: none;
+      background: #0077b6; color: white; border-radius: 4px; cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+    .floor-control-panel button:hover { background: #00568c; }
+    .floor-control-panel button:active { transform: scale(0.95); background: #00b4ff; box-shadow: 0 0 10px rgba(0,180,255,0.5); }
 
-        .floor-control-panel {
-            position: absolute;
-            right: 20px;
-            width: 100px;
-            height: 90px;
-            background: #0d0d21;
-            border: px solid #00b4ff;
-            box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-        }
-        
-        /* New positions to match the image */
-        .panel-g {
-            bottom: 15px;
-        }
+    .display {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      background: #0d0d21;
+      color: #ff0000;
+      font-size: 24px;
+      font-weight: bold;
+      padding: 10px 0;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      align-items: center;
+    }
 
-        .panel-1 {
-            bottom: 165px;
-        }
+    .led-display { font-family: 'monospace', sans-serif; letter-spacing: 2px; text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; }
+    .direction { color: #ff0000; font-weight: bold; }
 
-        .panel-2 {
-            bottom: 315px;
-        }
-
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .floor-control-panel button {
-            width: 30px;
-            height: 20px;
-            font-size: 10px;
-            border: none;
-            background: #0077b6;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-        }
-
-        .floor-control-panel button:hover {
-            background: #00568c;
-        }
-
-        .floor-control-panel button:active {
-            transform: scale(0.95);
-            background: #00b4ff;
-            box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
-        }
-
-        .display {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            background: #0d0d21;
-            color: #ff0000;
-            font-size: 24px;
-            font-weight: bold;
-            padding: 10px 0;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .led-display {
-            font-family: 'monospace', sans-serif;
-            letter-spacing: 2px;
-            text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
-        }
-
-        .direction {
-            color: #ff0000;
-            font-weight: bold;
-        }
-
-        .people-container {
-            position: absolute;
-            bottom: 0px;
-            width: 100%;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            transition: background-image 0.5s;
-        }
-
-        .stick-figure {
-            width: 20px;
-            height: 20px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-            margin: 0 5px;
-            display: block;
-        }
-
-        .overload {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><g transform="scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g><g transform="translate(40,0) scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g><g transform="translate(80,0) scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g><g transform="translate(120,0) scale(0.5)"><circle cx="50" cy="20" r="15" fill="%23e0e0e0"/><line x1="50" y1="35" x2="50" y2="70" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="30" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="50" x2="70" y2="60" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="35" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="70" x2="65" y2="90" stroke="%23e0e0e0" stroke-width="8" stroke-linecap="round"/></g></svg>');
-            background-size: 100% auto;
-            background-repeat: no-repeat;
-        }
-
-        .overload .stick-figure {
-            display: none;
-        }
-
-    </style>
+    .people-container { position: absolute; bottom: 0px; width: 100%; height: 60px; display: flex; justify-content: center; align-items: flex-end; transition: background-image 0.5s; }
+    .stick-figure { width: 20px; height: 20px; background-size: contain; background-repeat: no-repeat; margin: 0 5px; display: block; opacity: 1; transition: opacity 0.4s; }
+    .overload { background-image: none; }
+    .overload .stick-figure { display: none; }
+  </style>
 </head>
 <body>
-    <div class="building">
-        <div class="lift-shaft">
-            <div class="display">
-                <span id="floorDisplay" class="led-display">G</span>
-                <span id="direction" class="direction">–</span>
-            </div>
-            <div class="lift" id="lift">
-                <div class="doors">
-                    <div class="door left" id="leftDoor"></div>
-                    <div class="door right" id="rightDoor"></div>
-                </div>
-                <div id="peopleContainer" class="people-container">
-                    <div class="stick-figure"></div>
-                </div>
-            </div>
+  <div class="building">
+    <div class="lift-shaft">
+      <div class="display">
+        <span id="floorDisplay" class="led-display">G</span>
+        <span id="direction" class="direction">–</span>
+      </div>
 
-            <div class="floor-control-panel panel-g">
-                <div class="button-grid">
-                    <button onclick="addToQueue(0)">G</button>
-                    <button onclick="addToQueue(1)">1</button>
-                    <button onclick="addToQueue(2)">2</button>
-                    <button onclick="openDoor()">▶◀</button>
-                    <button onclick="closeDoor()">◀▶</button>
-                    <button onclick="toggleLight()">💡</button>
-                    <button onclick="toggleFan()">🌀</button>
-                    <button onclick="triggerAlarm()">🚨</button>
-                    <button onclick="triggerFire()">🔥</button>
-                </div>
-            </div>
-            <div class="floor-control-panel panel-1">
-                <div class="button-grid">
-                    <button onclick="addToQueue(0)">G</button>
-                    <button onclick="addToQueue(1)">1</button>
-                    <button onclick="addToQueue(2)">2</button>
-                    <button onclick="openDoor()">▶◀</button>
-                   <button onclick="closeDoor()">◀▶</button>
-                    <button onclick="toggleLight()">💡</button>
-                    <button onclick="toggleFan()">🌀</button>
-                    <button onclick="triggerAlarm()">🚨</button>
-                    <button onclick="triggerFire()">🔥</button>
-                </div>
-            </div>
-            <div class="floor-control-panel panel-2">
-                <div class="button-grid">
-                    <button onclick="addToQueue(0)">G</button>
-                    <button onclick="addToQueue(1)">1</button>
-                    <button onclick="addToQueue(2)">2</button>
-                    <button onclick="openDoor()">▶◀</button>
-                    <button onclick="closeDoor()">◀▶</button>
-                    <button onclick="toggleLight()">💡</button>
-                    <button onclick="toggleFan()">🌀</button>
-                    <button onclick="triggerAlarm()">🚨</button>
-                    <button onclick="triggerFire()">🔥</button>
-                </div>
-            </div>
-
-            <div class="floor-line floor-line-g"></div>
-            <div class="floor-line floor-line-1"></div>
-            <div class="floor-line floor-line-2"></div>
+      <div class="lift" id="lift">
+        <div class="doors">
+          <div class="door left" id="leftDoor"></div>
+          <div class="door right" id="rightDoor"></div>
         </div>
+        <div id="peopleContainer" class="people-container">
+          <div class="stick-figure" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;><circle cx=&quot;50&quot; cy=&quot;20&quot; r=&quot;15&quot; fill=&quot;%23e0e0e0&quot;/></svg>');"></div>
+        </div>
+      </div>
+
+      <div class="floor-control-panel panel-g">
+        <div class="button-grid">
+          <button onclick="addToQueue(0)">G</button>
+          <button onclick="addToQueue(1)">1</button>
+          <button onclick="addToQueue(2)">2</button>
+          <button onclick="openDoor()">▶◀</button>
+          <button onclick="closeDoor()">◀▶</button>
+          <button onclick="toggleLight()">💡</button>
+          <button onclick="toggleFan()">🌀</button>
+          <button onclick="triggerAlarm()">🚨</button>
+          <button onclick="triggerFire()">🔥</button>
+        </div>
+      </div>
+
+      <div class="floor-control-panel panel-1">
+        <div class="button-grid">
+          <button onclick="addToQueue(0)">G</button>
+          <button onclick="addToQueue(1)">1</button>
+          <button onclick="addToQueue(2)">2</button>
+          <button onclick="openDoor()">▶◀</button>
+          <button onclick="closeDoor()">◀▶</button>
+          <button onclick="toggleLight()">💡</button>
+          <button onclick="toggleFan()">🌀</button>
+          <button onclick="triggerAlarm()">🚨</button>
+          <button onclick="triggerFire()">🔥</button>
+        </div>
+      </div>
+
+      <div class="floor-control-panel panel-2">
+        <div class="button-grid">
+          <button onclick="addToQueue(0)">G</button>
+          <button onclick="addToQueue(1)">1</button>
+          <button onclick="addToQueue(2)">2</button>
+          <button onclick="openDoor()">▶◀</button>
+          <button onclick="closeDoor()">◀▶</button>
+          <button onclick="toggleLight()">💡</button>
+          <button onclick="toggleFan()">🌀</button>
+          <button onclick="triggerAlarm()">🚨</button>
+          <button onclick="triggerFire()">🔥</button>
+        </div>
+      </div>
+
+      <div class="floor-line floor-line-g"></div>
+      <div class="floor-line floor-line-1"></div>
+      <div class="floor-line floor-line-2"></div>
     </div>
+  </div>
 
-    <audio id="beepSound">
-        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
-        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
-    </audio>
+  <audio id="beepSound">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
+  </audio>
 
-    <script>
-        const lift = document.getElementById('lift');
-        const leftDoor = document.getElementById('leftDoor');
-        const rightDoor = document.getElementById('rightDoor');
-        const floorDisplay = document.getElementById('floorDisplay');
-        const direction = document.getElementById('direction');
-        const beepSound = document.getElementById('beepSound');
-        const peopleContainer = document.getElementById('peopleContainer');
-        const stickFigure = document.querySelector('.stick-figure');
+  <!-- Firebase module: initializes Firebase and exposes logLiftAction to window -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
-        const floors = [0, 150, 300];
-        let currentFloor = 0;
-        let isMoving = false;
-        let lightOn = false;
-        let fanOn = false;
-        let isOverloaded = false;
-        let isStuck = false;
-        const floorQueue = [];
+    // ----- CONFIG: replace with your project's config (yours seems correct already) -----
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtPWVd5UWL6WBsq0dnrhnzpvsFNlyfbds",
+      authDomain: "multifloorlift.firebaseapp.com",
+      databaseURL: "https://multifloorlift-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "multifloorlift",
+      storageBucket: "multifloorlift.appspot.com",
+      messagingSenderId: "538583269113",
+      appId: "1:538583269113:web:ba3fe48b17a6e4b7b12c28",
+      measurementId: "G-V9R64VQ63C"
+    };
 
-        function updateDisplay(message) {
-            floorDisplay.textContent = message;
-            if (message !== 'ALARM' && message !== 'FIRE' && message !== 'OVERLOAD' && message !== 'STUCK' && message !== 'DOORS OPEN' && message !== 'DOORS CLOSE' && message !== 'MOVING') {
-                floorDisplay.style.color = '#ff0000';
-            } else {
-                floorDisplay.style.color = 'red';
-            }
-        }
+    const app = initializeApp(firebaseConfig);
+    try { getAnalytics(app); } catch (e) { /* analytics may not be available in some contexts */ }
+    const db = getDatabase(app);
 
-        function addToQueue(floor) {
-            if (isOverloaded || isStuck) {
-                updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
-                beepSound.play();
-                setTimeout(() => {
-                    updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-                }, 2000);
-                return;
-            }
-            if (!floorQueue.includes(floor)) {
-                floorQueue.push(floor);
-                floorQueue.sort((a, b) => a - b);
-            }
-            processQueue();
-        }
+    // Expose logging function globally so main script (non-module) can call it
+    window.logLiftAction = function(action, floor) {
+      try {
+        const actionsRef = ref(db, "liftActions");
+        const newActionRef = push(actionsRef);
+        set(newActionRef, {
+          action: action,
+          floor: floor,
+          timestamp: new Date().toISOString()
+        });
+        console.log("Logged:", action, floor);
+      } catch (err) {
+        console.error("Firebase log error:", err);
+      }
+    };
+  </script>
 
-        function processQueue() {
-            if (isMoving || floorQueue.length === 0 || isOverloaded || isStuck) {
-                return;
-            }
+  <!-- Main (UI) script -->
+  <script>
+    // Elements
+    const lift = document.getElementById('lift');
+    const leftDoor = document.getElementById('leftDoor');
+    const rightDoor = document.getElementById('rightDoor');
+    const floorDisplay = document.getElementById('floorDisplay');
+    const direction = document.getElementById('direction');
+    const beepSound = document.getElementById('beepSound');
+    const peopleContainer = document.getElementById('peopleContainer');
+    const stickFigure = document.querySelector('.stick-figure');
 
-            isMoving = true;
-            const nextFloor = floorQueue.shift();
+    // Positions: index 0 -> ground (G), 1 -> floor 1, 2 -> floor 2
+    const floors = [0, 150, 300];
+    let currentFloor = 0;     // start at G (index 0)
+    let isMoving = false;
+    let doorsOpen = false;
+    let lightOn = false;
+    let fanOn = false;
+    let isOverloaded = false;
+    let isStuck = false;
+    const floorQueue = [];
+    let displayTimeout = null;
 
-            const goingUp = nextFloor > currentFloor;
-            direction.textContent = goingUp ? '▲' : '▼';
-            updateDisplay('MOVING');
-            logLiftAction("MOVING", nextFloor);
-            closeDoor();
-            setTimeout(() => {
-                lift.style.bottom = floors[nextFloor] + 'px';
-                setTimeout(() => {
-                    currentFloor = nextFloor;
-                    direction.textContent = '–';
-                    isMoving = false;
-                    updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-                    logLiftAction("ARRIVED", currentFloor);
-                    openDoor(); // Automatically opens the doors when the lift arrives
-                    setTimeout(processQueue, 2000);
-                }, 2500);
-            }, 1000);
-        }
+    // helper to show display (G for 0)
+    function floorLabel(num) { return num === 0 ? 'G' : String(num); }
 
-        function openDoor() {
-            if (isMoving) {
-                return;
-            }
-            leftDoor.style.transform = 'translateX(-100%)';
-            rightDoor.style.transform = 'translateX(100%)';
-            updateDisplay('DOORS OPEN');
-            logLiftAction("DOORS OPEN", currentFloor);
-            stickFigure.style.opacity = '1'; 
-            setTimeout(() => {
-                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-            }, 1000);
-        }
+    function updateDisplay(message) {
+      floorDisplay.textContent = message;
+      if (['ALARM','FIRE','OVERLOAD','STUCK','DOORS OPEN','DOORS CLOSE','MOVING'].includes(message)) {
+        floorDisplay.style.color = 'red';
+      } else {
+        floorDisplay.style.color = '#ff0000';
+      }
+    }
 
-        function closeDoor() {
-            if (isOverloaded || isStuck) {
-                updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
-                beepSound.play();
-                return;
-            }
-            leftDoor.style.transform = 'translateX(0)';
-            rightDoor.style.transform = 'translateX(0)';
-            updateDisplay('DOORS CLOSE');
-            logLiftAction("DOORS CLOSE", currentFloor);
-            stickFigure.style.opacity = '0';
-            setTimeout(() => {
-                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-            }, 1000);
-        }
+    // Add floor request
+    function addToQueue(floor) {
+      if (isOverloaded || isStuck) {
+        updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
+        beepSound.play();
+        setTimeout(() => updateDisplay(floorLabel(currentFloor)), 2000);
+        return;
+      }
+      // If same as current floor and doors closed, open them instead of queueing
+      if (floor === currentFloor && !isMoving) {
+        openDoor();
+        return;
+      }
+      if (!floorQueue.includes(floor)) {
+        floorQueue.push(floor);
+        // simple strategy: sort by direction if not moving; else keep FIFO.
+        if (!isMoving) floorQueue.sort((a,b)=>a-b);
+      }
+      processQueue();
+    }
 
-        function toggleLight() {
-            lightOn = !lightOn;
-            lift.style.background = lightOn ? '#f1c40f' : 'rgba(0, 180, 255, 0.2)';
-        }
-        
-        function toggleFan() {
-            fanOn = !fanOn;
-            lift.style.borderStyle = fanOn ? 'dashed' : 'solid';
-        }
+    // Core queue processor
+    function processQueue() {
+      if (isMoving || floorQueue.length === 0 || isOverloaded || isStuck) return;
+      const nextFloor = floorQueue.shift();
+      if (nextFloor === currentFloor) {
+        // already there: just open doors
+        openDoor();
+        return;
+      }
 
-        function triggerAlarm() {
-            if (isStuck) {
-                isStuck = false;
-                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-                processQueue();
-                return;
-            }
+      // ensure doors are closed before moving
+      if (doorsOpen) {
+        closeDoor();
+        setTimeout(()=> startMove(nextFloor), 1000); // wait for door close animation
+      } else {
+        startMove(nextFloor);
+      }
+    }
 
-            if (isMoving) {
-                isStuck = true;
-                updateDisplay('STUCK');
-                beepSound.play();
-                return;
-            }
+    // Start moving to nextFloor
+    function startMove(nextFloor) {
+      isMoving = true;
+      const goingUp = nextFloor > currentFloor;
+      direction.textContent = goingUp ? '▲' : '▼';
+      updateDisplay('MOVING');
 
-            // Default behavior if not stuck and not moving
-            isOverloaded = !isOverloaded;
-            if (isOverloaded) {
-                peopleContainer.classList.add('overload');
-                updateDisplay('OVERLOAD');
-                logLiftAction("OVERLOAD", currentFloor);
-                beepSound.play();
-            } else {
-                peopleContainer.classList.remove('overload');
-                updateDisplay(currentFloor === 0 ? 'G' : currentFloor);
-                logLiftAction("OVERLOAD CLEARED", currentFloor);
-            }
-        }
+      // Log start of moving
+      if (window.logLiftAction) window.logLiftAction("MOVING", nextFloor);
 
-       function triggerFire() {
-    if (displayTimeout) clearTimeout(displayTimeout); // Clear previous timeout
-                updateDisplay('FIRE');
-           logLiftAction("FIRE ALERT", currentFloor);
-// Show FIRE message
-    displayTimeout = setTimeout(() => {
-        updateDisplay(currentFloor===0?'G':currentFloor); // Return to current floor after 3s
-    }, 3000);
-}
+      // physically move the lift (CSS bottom)
+      lift.style.bottom = floors[nextFloor] + 'px';
 
-    </script>
-    <!-- ✅ Firebase Setup and Logging (Paste before </body>) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+      // movement duration must match CSS transition (2.5s)
+      setTimeout(() => {
+        currentFloor = nextFloor;
+        direction.textContent = '–';
+        isMoving = false;
+        updateDisplay(floorLabel(currentFloor));
 
-  // Your Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDtPWVd5UWL6WBsq0dnrhnzpvsFNlyfbds",
-    authDomain: "multifloorlift.firebaseapp.com",
-    databaseURL: "https://multifloorlift-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "multifloorlift",
-    storageBucket: "multifloorlift.appspot.com",
-    messagingSenderId: "538583269113",
-    appId: "1:538583269113:web:ba3fe48b17a6e4b7b12c28",
-    measurementId: "G-V9R64VQ63C"
-  };
+        // log arrival before opening doors
+        if (window.logLiftAction) window.logLiftAction("ARRIVED", currentFloor);
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getDatabase(app);
+        // open doors automatically on arrival
+        openDoor();
 
-  // ✅ Function to log lift actions to Firebase
-  function logLiftAction(action, floor) {
-    const actionsRef = ref(db, "liftActions/");
-    const newActionRef = push(actionsRef);
-    set(newActionRef, {
-      action: action,
-      floor: floor,
-      timestamp: new Date().toISOString()
+        // after arrival, process next queued destination after a short pause
+        setTimeout(processQueue, 2000);
+      }, 2500);
+    }
+
+    // Open doors (does nothing if moving)
+    function openDoor() {
+      if (isMoving) return;
+      if (doorsOpen) return;
+      doorsOpen = true;
+      leftDoor.style.transform = 'translateX(-100%)';
+      rightDoor.style.transform = 'translateX(100%)';
+      updateDisplay('DOORS OPEN');
+      stickFigure.style.opacity = '1';
+      // Log doors open
+      if (window.logLiftAction) window.logLiftAction("DOORS OPEN", currentFloor);
+
+      // show text briefly then revert to current floor label
+      if (displayTimeout) clearTimeout(displayTimeout);
+      displayTimeout = setTimeout(()=> updateDisplay(floorLabel(currentFloor)), 1200);
+    }
+
+    // Close doors (won't close if overload or stuck)
+    function closeDoor() {
+      if (isMoving) return;
+      if (!doorsOpen) {
+        // still allow log if explicitly pressed even if already closed
+        if (window.logLiftAction) window.logLiftAction("DOORS CLOSE (pressed)", currentFloor);
+        return;
+      }
+      if (isOverloaded || isStuck) {
+        updateDisplay(isOverloaded ? 'OVERLOAD':'STUCK');
+        beepSound.play();
+        // do not close
+        return;
+      }
+      doorsOpen = false;
+      leftDoor.style.transform = 'translateX(0)';
+      rightDoor.style.transform = 'translateX(0)';
+      updateDisplay('DOORS CLOSE');
+      stickFigure.style.opacity = '0';
+      if (window.logLiftAction) window.logLiftAction("DOORS CLOSE", currentFloor);
+      if (displayTimeout) clearTimeout(displayTimeout);
+      displayTimeout = setTimeout(()=> updateDisplay(floorLabel(currentFloor)), 1000);
+    }
+
+    // toggle light (visual)
+    function toggleLight() {
+      lightOn = !lightOn;
+      lift.style.background = lightOn ? '#f1c40f' : 'rgba(0, 180, 255, 0.12)';
+      if (window.logLiftAction) window.logLiftAction(lightOn ? "LIGHT ON":"LIGHT OFF", currentFloor);
+    }
+
+    // toggle fan (border style)
+    function toggleFan() {
+      fanOn = !fanOn;
+      lift.style.borderStyle = fanOn ? 'dashed' : 'solid';
+      if (window.logLiftAction) window.logLiftAction(fanOn ? "FAN ON":"FAN OFF", currentFloor);
+    }
+
+    // Alarm / overload toggle
+    function triggerAlarm() {
+      // If the elevator is moving, pressing alarm sets it to stuck for demo
+      if (isMoving && !isStuck) {
+        isStuck = true;
+        updateDisplay('STUCK');
+        beepSound.play();
+        if (window.logLiftAction) window.logLiftAction("STUCK (alarm)", currentFloor);
+        return;
+      }
+
+      // If not moving: toggle overload state (as your design intended)
+      isOverloaded = !isOverloaded;
+      if (isOverloaded) {
+        peopleContainer.classList.add('overload');
+        updateDisplay('OVERLOAD');
+        beepSound.play();
+        if (window.logLiftAction) window.logLiftAction("OVERLOAD", currentFloor);
+      } else {
+        peopleContainer.classList.remove('overload');
+        updateDisplay(floorLabel(currentFloor));
+        if (window.logLiftAction) window.logLiftAction("OVERLOAD CLEARED", currentFloor);
+      }
+    }
+
+    // Fire button
+    function triggerFire() {
+      // show FIRE and log
+      if (displayTimeout) clearTimeout(displayTimeout);
+      updateDisplay('FIRE');
+      if (window.logLiftAction) window.logLiftAction("FIRE ALERT", currentFloor);
+      beepSound.play();
+      displayTimeout = setTimeout(()=> updateDisplay(floorLabel(currentFloor)), 3000);
+    }
+
+    // A small helper to clear stuck state manually (press alarm again when stuck)
+    // When stuck and user presses alarm again, clear stuck and continue
+    // (We already toggle isStuck above when alarm pressed while moving)
+    function clearStuckIfAny() {
+      if (isStuck) {
+        isStuck = false;
+        updateDisplay(floorLabel(currentFloor));
+        if (window.logLiftAction) window.logLiftAction("STUCK CLEARED", currentFloor);
+        // resume processing
+        setTimeout(processQueue, 500);
+      }
+    }
+
+    // Small keyboard shortcuts for testing
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'g') addToQueue(0);
+      if (e.key === '1') addToQueue(1);
+      if (e.key === '2') addToQueue(2);
+      if (e.key === 'o') openDoor();
+      if (e.key === 'c') closeDoor();
+      if (e.key === 'f') triggerFire();
+      if (e.key === 'a') triggerAlarm();
+      if (e.key === 's') clearStuckIfAny();
     });
-    console.log(`✅ Logged to Firebase: ${action} at floor ${floor}`);
-  }
 
-  // ✅ Example: Log when user clicks anywhere (for testing)
-  function logLiftAction(action, floor) {
-  const actionsRef = ref(db, "liftActions/");
-  const newActionRef = push(actionsRef);
-  set(newActionRef, {
-    action: action,
-    floor: floor,
-    timestamp: new Date().toISOString()
-  });
-}
+    // Expose functions to global scope so inline onclick attributes work
+    window.addToQueue = addToQueue;
+    window.openDoor = openDoor;
+    window.closeDoor = closeDoor;
+    window.toggleLight = toggleLight;
+    window.toggleFan = toggleFan;
+    window.triggerAlarm = triggerAlarm;
+    window.triggerFire = triggerFire;
 
-</script>
-
+    // initialize visual display
+    updateDisplay(floorLabel(currentFloor));
+  </script>
 </body>
 </html>
