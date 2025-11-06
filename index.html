@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lift Simulation</title>
+  <title>Futuristic Lift Simulation</title>
   <style>
     body {
       margin: 0;
@@ -15,12 +15,6 @@
       font-family: 'Segoe UI', Arial, sans-serif;
       color: #e0e0e0;
     }
-    
-    .person, .lift-cabin, .door, button, * {
-    outline: none;
-    border: none;
-    list-style: none;
-}
 
     .building {
       display: flex;
@@ -126,26 +120,26 @@
     .led-display { font-family: 'monospace', sans-serif; letter-spacing: 2px; text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; }
     .direction { color: #ff0000; font-weight: bold; }
 
-    .people-container { position: absolute; bottom: 0px; width: 100%; height: 60px; display: flex; justify-content: center; align-items: flex-end; transition: background-image 0.5s; }
-    .stick-figure {
-  width: 30px;
-  height: 30px;
-  background-image: url("data:image/svg+xml;utf8,\
-  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200'>\
-    <circle cx='50' cy='30' r='20' fill='%23ffffff'/>\
-    <line x1='50' y1='50' x2='50' y2='120' stroke='%23ffffff' stroke-width='10' stroke-linecap='round'/>\
-    <line x1='50' y1='80' x2='20' y2='110' stroke='%23ffffff' stroke-width='10' stroke-linecap='round'/>\
-    <line x1='50' y1='80' x2='80' y2='110' stroke='%23ffffff' stroke-width='10' stroke-linecap='round'/>\
-    <line x1='50' y1='120' x2='20' y2='170' stroke='%23ffffff' stroke-width='10' stroke-linecap='round'/>\
-    <line x1='50' y1='120' x2='80' y2='170' stroke='%23ffffff' stroke-width='10' stroke-linecap='round'/>\
-  </svg>");
-  background-size: contain;
-  background-repeat: no-repeat;
-  font-size: 0;     /* ✅ removes stray text dot */
-}
+    .people-container {
+      position: absolute;
+      bottom: 0px;
+      width: 100%;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
 
-    .overload { background-image: none; }
-    .overload .stick-figure { display: none; }
+    .stick-figure {
+      width: 30px;
+      height: 50px;
+      background-image: url('https://i.imgur.com/EKTtVTL.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      transition: opacity 0.4s;
+    }
+
+    .overload .stick-figure { opacity: 0; }
   </style>
 </head>
 <body>
@@ -157,15 +151,13 @@
       </div>
 
       <div class="lift" id="lift">
-        <div id="peopleContainer" class="people-container">
- <div class="stick-figure" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;><circle cx=&quot;50&quot; cy=&quot;20&quot; r=&quot;15&quot; fill=&quot;%23e0e0e0&quot;/></svg>');"></div> </div>
-</div>
         <div class="doors">
           <div class="door left" id="leftDoor"></div>
           <div class="door right" id="rightDoor"></div>
         </div>
         <div id="peopleContainer" class="people-container">
           <div class="stick-figure"></div>
+        </div>
       </div>
 
       <div class="floor-control-panel panel-g">
@@ -221,13 +213,11 @@
     <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Firebase module: initializes Firebase and exposes logLiftAction to window -->
+  <!-- ✅ Firebase Logging Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    // ----- CONFIG: replace with your project's config (yours seems correct already) -----
     const firebaseConfig = {
       apiKey: "AIzaSyDtPWVd5UWL6WBsq0dnrhnzpvsFNlyfbds",
       authDomain: "multifloorlift.firebaseapp.com",
@@ -240,29 +230,25 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    try { getAnalytics(app); } catch (e) { /* analytics may not be available in some contexts */ }
     const db = getDatabase(app);
 
-    // Expose logging function globally so main script (non-module) can call it
     window.logLiftAction = function(action, floor) {
       try {
         const actionsRef = ref(db, "liftActions");
-        const newActionRef = push(actionsRef);
-        set(newActionRef, {
+        const newAction = push(actionsRef);
+        set(newAction, {
           action: action,
           floor: floor,
-          timestamp: new Date().toISOString()
+          time: new Date().toISOString()
         });
-        console.log("Logged:", action, floor);
-      } catch (err) {
-        console.error("Firebase log error:", err);
+      } catch (e) {
+        console.log("Logging error:", e);
       }
-    };
+    }
   </script>
 
-  <!-- Main (UI) script -->
+  <!-- ✅ Main Script -->
   <script>
-    // Elements
     const lift = document.getElementById('lift');
     const leftDoor = document.getElementById('leftDoor');
     const rightDoor = document.getElementById('rightDoor');
@@ -270,219 +256,89 @@
     const direction = document.getElementById('direction');
     const beepSound = document.getElementById('beepSound');
     const peopleContainer = document.getElementById('peopleContainer');
-    const stickFigure = document.querySelector('.stick-figure');
 
-    // Positions: index 0 -> ground (G), 1 -> floor 1, 2 -> floor 2
     const floors = [0, 150, 300];
-    let currentFloor = 0;     // start at G (index 0)
+    let currentFloor = 0;
     let isMoving = false;
     let doorsOpen = false;
-    let lightOn = false;
-    let fanOn = false;
     let isOverloaded = false;
     let isStuck = false;
-    const floorQueue = [];
-    let displayTimeout = null;
+    let queue = [];
 
-    // helper to show display (G for 0)
-    function floorLabel(num) { return num === 0 ? 'G' : String(num); }
+    function label(f) { return f === 0 ? "G" : f; }
 
-    function updateDisplay(message) {
-      floorDisplay.textContent = message;
-      if (['ALARM','FIRE','OVERLOAD','STUCK','DOORS OPEN','DOORS CLOSE','MOVING'].includes(message)) {
-        floorDisplay.style.color = 'red';
-      } else {
-        floorDisplay.style.color = '#ff0000';
-      }
-    }
-
-    // Add floor request
-    function addToQueue(floor) {
-      if (isOverloaded || isStuck) {
-        updateDisplay(isOverloaded ? 'OVERLOAD' : 'STUCK');
-        beepSound.play();
-        setTimeout(() => updateDisplay(floorLabel(currentFloor)), 2000);
-        return;
-      }
-      // If same as current floor and doors closed, open them instead of queueing
-      if (floor === currentFloor && !isMoving) {
-        openDoor();
-        return;
-      }
-      if (!floorQueue.includes(floor)) {
-        floorQueue.push(floor);
-        // simple strategy: sort by direction if not moving; else keep FIFO.
-        if (!isMoving) floorQueue.sort((a,b)=>a-b);
-      }
+    function addToQueue(f) {
+      if (isOverloaded || isStuck) return;
+      if (!queue.includes(f)) queue.push(f);
       processQueue();
     }
 
-    // Core queue processor
     function processQueue() {
-      if (isMoving || floorQueue.length === 0 || isOverloaded || isStuck) return;
-      const nextFloor = floorQueue.shift();
-      if (nextFloor === currentFloor) {
-        // already there: just open doors
-        openDoor();
-        return;
-      }
-
-      // ensure doors are closed before moving
-      if (doorsOpen) {
-        closeDoor();
-        setTimeout(()=> startMove(nextFloor), 1000); // wait for door close animation
-      } else {
-        startMove(nextFloor);
-      }
+      if (isMoving || queue.length === 0) return;
+      const next = queue.shift();
+      moveToFloor(next);
     }
 
-    // Start moving to nextFloor
-    function startMove(nextFloor) {
+    function moveToFloor(f) {
+      if (doorsOpen) closeDoor();
       isMoving = true;
-      const goingUp = nextFloor > currentFloor;
-      direction.textContent = goingUp ? '▲' : '▼';
-      updateDisplay('MOVING');
+      direction.textContent = f > currentFloor ? "▲" : "▼";
+      floorDisplay.textContent = "MOVING";
+      window.logLiftAction("MOVING", f);
+      lift.style.bottom = floors[f] + "px";
 
-      // Log start of moving
-      if (window.logLiftAction) window.logLiftAction("MOVING", nextFloor);
-
-      // physically move the lift (CSS bottom)
-      lift.style.bottom = floors[nextFloor] + 'px';
-
-      // movement duration must match CSS transition (2.5s)
       setTimeout(() => {
-        currentFloor = nextFloor;
-        direction.textContent = '–';
+        currentFloor = f;
         isMoving = false;
-        updateDisplay(floorLabel(currentFloor));
-
-        // log arrival before opening doors
-        if (window.logLiftAction) window.logLiftAction("ARRIVED", currentFloor);
-
-        // open doors automatically on arrival
+        direction.textContent = "–";
+        floorDisplay.textContent = label(f);
+        window.logLiftAction("ARRIVED", f);
         openDoor();
-
-        // after arrival, process next queued destination after a short pause
-        setTimeout(processQueue, 2000);
+        setTimeout(processQueue, 1500);
       }, 2500);
     }
 
-    // Open doors (does nothing if moving)
     function openDoor() {
-      if (isMoving) return;
-      if (doorsOpen) return;
       doorsOpen = true;
-      leftDoor.style.transform = 'translateX(-100%)';
-      rightDoor.style.transform = 'translateX(100%)';
-      updateDisplay('DOORS OPEN');
-      stickFigure.style.opacity = '1';
-      // Log doors open
-      if (window.logLiftAction) window.logLiftAction("DOORS OPEN", currentFloor);
-
-      // show text briefly then revert to current floor label
-      if (displayTimeout) clearTimeout(displayTimeout);
-      displayTimeout = setTimeout(()=> updateDisplay(floorLabel(currentFloor)), 1200);
+      leftDoor.style.transform = "translateX(-100%)";
+      rightDoor.style.transform = "translateX(100%)";
+      floorDisplay.textContent = "DOORS OPEN";
+      window.logLiftAction("DOORS OPEN", currentFloor);
     }
 
-    // Close doors (won't close if overload or stuck)
     function closeDoor() {
-      if (isMoving) return;
-      if (!doorsOpen) {
-        // still allow log if explicitly pressed even if already closed
-        if (window.logLiftAction) window.logLiftAction("DOORS CLOSE (pressed)", currentFloor);
-        return;
-      }
-      if (isOverloaded || isStuck) {
-        updateDisplay(isOverloaded ? 'OVERLOAD':'STUCK');
-        beepSound.play();
-        // do not close
-        return;
-      }
       doorsOpen = false;
-      leftDoor.style.transform = 'translateX(0)';
-      rightDoor.style.transform = 'translateX(0)';
-      updateDisplay('DOORS CLOSE');
-      stickFigure.style.opacity = '0';
-      if (window.logLiftAction) window.logLiftAction("DOORS CLOSE", currentFloor);
-      if (displayTimeout) clearTimeout(displayTimeout);
-      displayTimeout = setTimeout(()=> updateDisplay(floorLabel(currentFloor)), 1000);
+      leftDoor.style.transform = "translateX(0)";
+      rightDoor.style.transform = "translateX(0)";
+      floorDisplay.textContent = "DOORS CLOSE";
+      window.logLiftAction("DOORS CLOSE", currentFloor);
     }
 
-    // toggle light (visual)
     function toggleLight() {
-      lightOn = !lightOn;
-      lift.style.background = lightOn ? '#f1c40f' : 'rgba(0, 180, 255, 0.12)';
-      if (window.logLiftAction) window.logLiftAction(lightOn ? "LIGHT ON":"LIGHT OFF", currentFloor);
+      lift.style.background = lift.style.background === "yellow" ? "rgba(0,180,255,0.12)" : "yellow";
+      window.logLiftAction("LIGHT TOGGLED", currentFloor);
     }
 
-    // toggle fan (border style)
     function toggleFan() {
-      fanOn = !fanOn;
-      lift.style.borderStyle = fanOn ? 'dashed' : 'solid';
-      if (window.logLiftAction) window.logLiftAction(fanOn ? "FAN ON":"FAN OFF", currentFloor);
+      lift.style.borderStyle = lift.style.borderStyle === "dashed" ? "solid" : "dashed";
+      window.logLiftAction("FAN TOGGLED", currentFloor);
     }
 
-    // Alarm / overload toggle
     function triggerAlarm() {
-      // If the elevator is moving, pressing alarm sets it to stuck for demo
-      if (isMoving && !isStuck) {
-        isStuck = true;
-        updateDisplay('STUCK');
-        beepSound.play();
-        if (window.logLiftAction) window.logLiftAction("STUCK (alarm)", currentFloor);
-        return;
-      }
-
-      // If not moving: toggle overload state (as your design intended)
-      isOverloaded = !isOverloaded;
-      if (isOverloaded) {
-        peopleContainer.classList.add('overload');
-        updateDisplay('OVERLOAD');
-        beepSound.play();
-        if (window.logLiftAction) window.logLiftAction("OVERLOAD", currentFloor);
-      } else {
-        peopleContainer.classList.remove('overload');
-        updateDisplay(floorLabel(currentFloor));
-        if (window.logLiftAction) window.logLiftAction("OVERLOAD CLEARED", currentFloor);
-      }
-    }
-
-    // Fire button
-    function triggerFire() {
-      // show FIRE and log
-      if (displayTimeout) clearTimeout(displayTimeout);
-      updateDisplay('FIRE');
-      if (window.logLiftAction) window.logLiftAction("FIRE ALERT", currentFloor);
       beepSound.play();
-      displayTimeout = setTimeout(()=> updateDisplay(floorLabel(currentFloor)), 3000);
+      floorDisplay.textContent = "OVERLOAD";
+      isOverloaded = !isOverloaded;
+      peopleContainer.classList.toggle("overload");
+      window.logLiftAction("OVERLOAD TOGGLE", currentFloor);
     }
 
-    // A small helper to clear stuck state manually (press alarm again when stuck)
-    // When stuck and user presses alarm again, clear stuck and continue
-    // (We already toggle isStuck above when alarm pressed while moving)
-    function clearStuckIfAny() {
-      if (isStuck) {
-        isStuck = false;
-        updateDisplay(floorLabel(currentFloor));
-        if (window.logLiftAction) window.logLiftAction("STUCK CLEARED", currentFloor);
-        // resume processing
-        setTimeout(processQueue, 500);
-      }
+    function triggerFire() {
+      beepSound.play();
+      floorDisplay.textContent = "FIRE";
+      window.logLiftAction("FIRE ALERT", currentFloor);
+      setTimeout(() => floorDisplay.textContent = label(currentFloor), 3000);
     }
 
-    // Small keyboard shortcuts for testing
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'g') addToQueue(0);
-      if (e.key === '1') addToQueue(1);
-      if (e.key === '2') addToQueue(2);
-      if (e.key === 'o') openDoor();
-      if (e.key === 'c') closeDoor();
-      if (e.key === 'f') triggerFire();
-      if (e.key === 'a') triggerAlarm();
-      if (e.key === 's') clearStuckIfAny();
-    });
-
-    // Expose functions to global scope so inline onclick attributes work
     window.addToQueue = addToQueue;
     window.openDoor = openDoor;
     window.closeDoor = closeDoor;
@@ -490,9 +346,6 @@
     window.toggleFan = toggleFan;
     window.triggerAlarm = triggerAlarm;
     window.triggerFire = triggerFire;
-
-    // initialize visual display
-    updateDisplay(floorLabel(currentFloor));
   </script>
 </body>
 </html>
