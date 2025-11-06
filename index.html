@@ -459,9 +459,16 @@
   }
 
   // ✅ Example: Log when user clicks anywhere (for testing)
-  document.addEventListener("click", () => {
-    logLiftAction("Lift moved up", 2);
+  function logLiftAction(action, floor) {
+  const actionsRef = ref(db, "liftActions/");
+  const newActionRef = push(actionsRef);
+  set(newActionRef, {
+    action: action,
+    floor: floor,
+    timestamp: new Date().toISOString()
   });
+}
+
 </script>
 
 </body>
